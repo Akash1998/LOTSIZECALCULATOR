@@ -154,13 +154,28 @@
     .mobile-nav button { flex: 1; padding: 0.8rem; font-size: 0.85rem; font-weight: 800; border-radius: var(--radius-full); color: var(--color-text-muted); }
     .mobile-nav button.active { background: var(--trade-color); color: #fff; }
 
+    /* ----------------------------------------------------
+       RESPONSIVE MOBILE FIX: Resolves squished input boxes
+       ---------------------------------------------------- */
     @media (max-width: 1200px) { 
       .dashboard-row { grid-template-columns: 1fr 1fr; } 
       .full-span { grid-column: 1 / -1; }
     }
     @media (max-width: 768px) { 
-      .app { padding-inline: 1rem; } 
+      /* Slightly tighter outer padding to give elements room */
+      .app { padding: 1rem 0.8rem 6rem; } 
       .dashboard-row { grid-template-columns: 1fr; } 
+      /* Reduce inner card padding so content doesn't get squished */
+      .card { padding: 1.25rem; }
+      
+      /* THE MAGIC FIX: Stack the 2-column grids vertically on phones so steppers can stretch full width */
+      .grid-2 { grid-template-columns: 1fr; gap: 1rem; } 
+      
+      /* Optimize touch targets slightly for small width screens */
+      .stepper-btn { width: 44px; font-size: 1.4rem; }
+      .quick-chips { gap: 0.4rem; }
+      .chip-btn { padding: 0.5rem; font-size: 0.8rem; }
+      
       .mobile-nav { display: block; } 
       .target-card { grid-template-columns: 1fr; text-align: center; gap: 0.8rem; }
       .t-roi { text-align: center; }
