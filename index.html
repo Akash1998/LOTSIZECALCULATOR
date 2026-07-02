@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-side="LONG">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Sahi Lot Size Pro - Execution Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=general-sans@500,600,700,800&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-5: 1.25rem;
+      --color-bg: #f3f5f8; --color-surface: #ffffff; --color-surface-offset: #eef1f6;
+      --color-border: #dbe0e7; --color-divider: #e4e7ec; --color-text: #1a1d21; --color-text-muted: #64748b; --color-text-inverse: #ffffff;
+      
+      /* Base Colors */
+      --color-blue: #0ea5e9; --color-warning: #f59e0b; --color-accent: #8b5cf6;
+      --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px; --radius-full: 9999px;
+      --font-display: 'General Sans', sans-serif; --font-body: 'Satoshi', sans-serif;
+      --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05); --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05);
+      --glass-border: rgba(0,0,0,0.05);
+    }
+    
+    [data-theme="dark"] {
+      --color-bg: #090a0f; --color-surface: #11131a; --color-surface-offset: #1a1d27;
+      --color-border: #262a36; --color-divider: #1f222e; --color-text: #f8fafc; --color-text-muted: #94a3b8; --color-text-inverse: #090a0f;
+      --shadow-sm: 0 4px 12px rgba(0,0,0,0.2); --shadow-md: 0 12px 24px rgba(0,0,0,0.4);
+      --glass-border: rgba(255,255,255,0.04);
+    }
+
+    /* Directional Theme Variables (The Magic Shift) */
+    [data-side="LONG"] {
+      --trade-color: #00e676;
+      --trade-color-hover: #10b981;
+      --trade-bg-faint: rgba(0, 230, 118, 0.1);
+      --trade-border: rgba(0, 230, 118, 0.3);
+      --trade-glow: 0 0 20px rgba(0, 230, 118, 0.15);
+    }
+    
+    [data-side="SHORT"] {
+      --trade-color: #ff3b30;
+      --trade-color-hover: #ff453a;
+      --trade-bg-faint: rgba(255, 59, 48, 0.1);
+      --trade-border: rgba(255, 59, 48, 0.3);
+      --trade-glow: 0 0 20px rgba(255, 59, 48, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: var(--font-body); font-size: 15px; line-height: 1.5; background: var(--color-bg); color: var(--color-text); min-height: 100dvh; overflow-x: hidden; transition: background-color 0.3s; }
+    button, input, select { font: inherit; color: inherit; border: none; background: none; outline: none; }
+    button { cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    button:active { transform: scale(0.95); }
+    
+    input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    /* Animations */
+    @keyframes pulse-error {
+      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.3); border-color: #ff3b30; }
+      70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); border-color: #ff3b30; }
+      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); border-color: #ff3b30; }
+    }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .app { max-width: 1500px; margin: auto; padding: calc(env(safe-area-inset-top) + var(--space-4)) var(--space-4) calc(6rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 1.5rem; }
+    
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: var(--color-surface); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); position: sticky; top: 15px; z-index: 50; box-shadow: var(--shadow-md); backdrop-filter: blur(20px); }
+    
+    .brand { display: flex; align-items: center; gap: 1rem; }
+    .brand-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--trade-color), var(--color-blue)); border-radius: var(--radius-md); display: grid; place-items: center; color: #fff; font-weight: 900; font-family: var(--font-display); font-size: 1.4rem; box-shadow: var(--trade-glow); transition: all 0.3s; }
+    .brand h1 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+    .toolbar { display: flex; gap: 0.6rem; }
+    
+    .btn { padding: 0.65rem 1.4rem; border-radius: var(--radius-md); background: var(--color-surface-offset); font-weight: 700; font-size: 0.9rem; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 0.4rem; }
+    .btn.primary { background: var(--trade-color); color: #fff; border: none; box-shadow: var(--trade-glow); transition: all 0.3s; }
+    .btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+    /* Layout Engine */
+    .dashboard-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; align-items: stretch; animation: fade-in 0.4s ease backwards; }
+    .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; }
+    
+    .card { background: var(--color-surface); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 1.75rem; box-shadow: var(--shadow-md); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--trade-bg-faint), transparent); transition: all 0.3s; }
+    .card.alert-pulse { animation: pulse-error 1.5s infinite; }
+    
+    .card-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; display: flex; justify-content: space-between; align-items: center; }
+    .card-sub { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.2rem; }
+    
+    /* Mouse Friendly Steppers */
+    .field { display: grid; gap: 0.5rem; margin-bottom: 1rem; }
+    .field label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 800; color: var(--color-text-muted); display: flex; justify-content: space-between; align-items: center; }
+    
+    .stepper-shell { display: flex; align-items: center; background: var(--color-surface-offset); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; height: 54px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .stepper-shell:focus-within { border-color: var(--trade-color); box-shadow: 0 0 0 3px var(--trade-bg-faint); }
+    
+    .stepper-btn { width: 50px; height: 100%; display: grid; place-items: center; font-size: 1.6rem; font-weight: 500; color: var(--trade-color); background: transparent; user-select: none; transition: background 0.2s, color 0.2s; }
+    .stepper-btn:hover { background: var(--trade-bg-faint); }
+    .stepper-btn:active { background: var(--trade-color); color: #fff; }
+    
+    .input-core { flex: 1; display: flex; align-items: center; padding: 0 0.5rem; justify-content: center; }
+    .input-core input { width: 100%; font-size: 1.25rem; font-weight: 800; text-align: center; color: var(--color-text); }
+    .input-core .prefix, .input-core .suffix { font-weight: 700; color: var(--color-text-muted); font-size: 0.95rem; }
+    
+    select.minimal { width: 100%; padding: 0.9rem; border-radius: var(--radius-md); background: var(--color-surface-offset); border: 1px solid var(--color-border); font-weight: 700; font-size: 1rem; appearance: none; color: var(--color-text); cursor: pointer; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    
+    /* Long/Short Toggle */
+    .side-toggle { display: flex; background: var(--color-surface-offset); padding: 0.4rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin: 1.2rem 0; gap: 0.4rem; }
+    .side-toggle button { flex: 1; padding: 0.8rem 0; font-weight: 800; font-size: 1rem; border-radius: calc(var(--radius-md) - 4px); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s; }
+    .side-toggle button.active[data-side="LONG"] { background: #00e676; color: #000; box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3); }
+    .side-toggle button.active[data-side="SHORT"] { background: #ff3b30; color: #fff; box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3); }
+    
+    .quick-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1.2rem; }
+    .chip-btn { padding: 0.6rem; border-radius: var(--radius-md); background: var(--color-surface-offset); font-size: 0.85rem; font-weight: 800; text-align: center; border: 1px solid transparent; color: var(--color-text-muted); }
+    .chip-btn.active { border-color: var(--trade-color); color: var(--trade-color); background: var(--trade-bg-faint); }
+    
+    /* Telemetry Dashboard */
+    .kpi-board { background: linear-gradient(180deg, var(--trade-bg-faint), var(--color-surface-offset)); border-radius: var(--radius-lg); padding: 2rem 1.5rem; text-align: center; border: 1px solid var(--trade-border); position: relative; overflow: hidden; margin-bottom: 1.5rem; transition: all 0.3s; flex-shrink: 0; }
+    .kpi-title { font-size: 0.85rem; text-transform: uppercase; font-weight: 800; color: var(--color-text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+    .kpi-value { font-family: var(--font-display); font-size: clamp(3.5rem, 4vw, 5.5rem); font-weight: 800; line-height: 1; margin-bottom: 0.5rem; color: var(--trade-color); text-shadow: var(--trade-glow); transition: color 0.3s; }
+    .kpi-sub { font-size: 1rem; font-weight: 600; color: var(--color-text-muted); }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; flex-grow: 1; }
+    .stat-box { background: var(--color-surface-offset); padding: 1.2rem; border-radius: var(--radius-md); border: 1px solid transparent; display: flex; flex-direction: column; justify-content: center; }
+    .stat-box .lbl { font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--color-text-muted); margin-bottom: 0.3rem; }
+    .stat-box .val { font-size: 1.4rem; font-weight: 800; }
+    .stat-box .sub-val { font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600; margin-top: 0.2rem; }
+    
+    .highlight-trade { border-color: var(--trade-border); background: var(--trade-bg-faint); }
+    .highlight-trade .val { color: var(--trade-color); }
+
+    /* Target Ladder - 10X Upgrade */
+    .target-ladder { display: grid; gap: 1rem; }
+    .target-card { background: var(--color-surface-offset); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.2rem; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1.5rem; transition: transform 0.2s; border-left: 4px solid var(--color-border); }
+    .target-card:hover { transform: translateX(5px); border-left-color: var(--trade-color); background: var(--trade-bg-faint); }
+    .t-badge { padding: 0.4rem 0.8rem; border-radius: var(--radius-md); font-size: 1rem; font-weight: 900; background: var(--trade-color); color: #fff; box-shadow: var(--trade-glow); }
+    .t-price { font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); }
+    .t-details { display: flex; gap: 1rem; margin-top: 0.3rem; font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); }
+    .t-details span strong { color: var(--color-text); }
+    .t-roi { font-size: 1.4rem; font-weight: 900; color: var(--trade-color); text-align: right; }
+
+    .status-banner { padding: 1.2rem; border-radius: var(--radius-md); font-weight: 800; text-align: center; font-size: 1rem; margin-top: 1.5rem; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-banner.ok { background: var(--trade-bg-faint); color: var(--trade-color); border: 1px solid var(--trade-border); }
+    .status-banner.error { background: rgba(255, 59, 48, 0.1); color: #ff3b30; border: 1px solid rgba(255, 59, 48, 0.4); animation: pulse-error 1.5s infinite; }
+
+    .table-list { display: grid; gap: 0.5rem; }
+    .table-row { display: flex; justify-content: space-between; padding: 0.9rem 0; border-bottom: 1px solid var(--color-divider); font-size: 1rem; font-weight: 600; }
+    .table-row:last-child { border-bottom: none; }
+
+    /* Mobile Nav */
+    .mobile-nav { display: none; position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; background: rgba(17,19,26,0.9); backdrop-filter: blur(15px); padding: 0.6rem; border-radius: var(--radius-full); border: 1px solid var(--color-border); z-index: 100; box-shadow: var(--shadow-md); }
+    .mobile-nav-grid { display: flex; justify-content: space-between; gap: 0.5rem; }
+    .mobile-nav button { flex: 1; padding: 0.8rem; font-size: 0.85rem; font-weight: 800; border-radius: var(--radius-full); color: var(--color-text-muted); }
+    .mobile-nav button.active { background: var(--trade-color); color: #fff; }
+
+    @media (max-width: 1200px) { 
+      .dashboard-row { grid-template-columns: 1fr 1fr; } 
+      .full-span { grid-column: 1 / -1; }
+    }
+    @media (max-width: 768px) { 
+      .app { padding-inline: 1rem; } 
+      .dashboard-row { grid-template-columns: 1fr; } 
+      .mobile-nav { display: block; } 
+      .target-card { grid-template-columns: 1fr; text-align: center; gap: 0.8rem; }
+      .t-roi { text-align: center; }
+      .t-details { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <!-- Header -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">S</div>
+        <div><h1>Sahi Lot Size Pro</h1></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="resetBtn">Reset</button>
+        <button class="btn primary" id="themeBtn">Theme</button>
+      </div>
+    </header>
+
+    <!-- TOP ROW: Core Inputs & Telemetry -->
+    <main class="dashboard-row delay-1">
+      
+      <!-- Column 1: Capital -->
+      <section class="card">
+        <div class="card-title">Capital Engine <span style="color:var(--trade-color); font-size:0.75rem; background:var(--trade-bg-faint); padding:0.2rem 0.6rem; border-radius:999px;">● LIVE</span></div>
+        <p class="card-sub">Touch-optimized constraints & limits.</p>
+        
+        <div class="quick-chips" id="capitalChips">
+          <button class="chip-btn" data-cap="50000">50K</button>
+          <button class="chip-btn active" data-cap="80000">80K</button>
+          <button class="chip-btn" data-cap="100000">1L</button>
+          <button class="chip-btn" data-cap="500000">5L</button>
+        </div>
+
+        <div class="field">
+          <label>Trading Capital</label>
+          <div class="stepper-shell">
+            <button class="stepper-btn minus" tabindex="-1">−</button>
+            <div class="input-core"><span class="prefix">₹</span><input type="number" id="capital" value="80000" step="10000"></div>
+            <button class="stepper-btn plus" tabindex="-1">+</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Risk %</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><input type="number" id="riskPercent" value="1.0" step="0.1" data-decimals="2"><span class="suffix">%</span></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Risk Amount</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><span class="prefix">₹</span><input type="number" id="riskAmount" value="800" step="100"></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Daily Max Loss</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><span class="prefix">₹</span><input type="number" id="dailyLoss" value="2500" step="500"></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Leverage (x)</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><input type="number" id="leverage" value="5" step="1"><span class="suffix">x</span></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Column 2: Instrument Setup -->
+      <section class="card">
+        <div class="card-title">Instrument Setup</div>
+        <p class="card-sub">Asset mapping and tactical pricing.</p>
+        
+        <div class="field">
+          <label>Market Segment</label>
+          <select id="instrument" class="minimal"></select>
+        </div>
+
+        <!-- Huge Long/Short Toggle -->
+        <div class="side-toggle" id="sideGroup">
+          <button class="active" data-side="LONG">LONG (Call/Buy)</button>
+          <button data-side="SHORT">SHORT (Put/Sell)</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Entry Price</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><span class="prefix">₹</span><input type="number" id="entry" value="185.20" step="0.5" data-decimals="2"></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Stop Loss</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><span class="prefix">₹</span><input type="number" id="stop" value="176.00" step="0.5" data-decimals="2"></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:0.5rem">
+          <div class="field">
+            <label>Slippage Buffer</label>
+            <div class="stepper-shell">
+              <button class="stepper-btn minus" tabindex="-1">−</button>
+              <div class="input-core"><input type="number" id="slippage" value="0.1" step="0.1" data-decimals="2"><span class="suffix">%</span></div>
+              <button class="stepper-btn plus" tabindex="-1">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Speed Preset</label>
+            <select id="presetSelect" class="minimal">
+              <option value="0">Standard (1% Risk)</option>
+              <option value="1">Sniper Scalp (0.75% Risk)</option>
+              <option value="2">Aggressive (1.5% Risk)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Column 3: Telemetry KPI -->
+      <section class="card" id="telemetryCard">
+        <div class="kpi-board">
+          <div class="kpi-title">Optimal Quantity</div>
+          <div class="kpi-value" id="qtyDisplay">0</div>
+          <div class="kpi-sub" id="lotDisplay">0 lots · 0 qty/lot</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="lbl">Actual Risk Taken</div>
+            <div class="val" id="grossRiskUsed" style="color: #ff3b30;">₹0</div>
+          </div>
+          <div class="stat-box">
+            <div class="lbl">Stop Points (Inc. Slip)</div>
+            <div class="val" id="slPoints">0.00 pts</div>
+          </div>
+          <div class="stat-box">
+            <div class="lbl">Margin Required</div>
+            <div class="val" id="marginNeed">₹0</div>
+          </div>
+          <!-- Upgraded Breakeven Box -->
+          <div class="stat-box highlight-trade">
+            <div class="lbl">Zero-Loss SL (Breakeven)</div>
+            <div class="val" id="breakevenPrice">₹0.00</div>
+            <div class="sub-val" id="breakevenShift">0.00 pts shift needed</div>
+          </div>
+        </div>
+
+        <div id="riskAlert" class="status-banner ok">System Ready: Trade Compliant</div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM ROW: Targets, Friction, Quality Gates -->
+    <main class="dashboard-row delay-2">
+      
+      <!-- Target Ladder -->
+      <section class="card">
+        <div class="card-title">Execution Targets</div>
+        <p class="card-sub">Dynamic pricing for exits after net charges.</p>
+        
+        <div class="target-ladder">
+          <!-- T1 -->
+          <div class="target-card">
+            <div class="t-badge">T1 (1R)</div>
+            <div>
+              <div class="t-price" id="t1Price">₹0.00</div>
+              <div class="t-details">
+                <span>Gross: <strong id="t1Gross">₹0</strong></span>
+                <span>Net PnL: <strong id="t1Net">₹0</strong></span>
+              </div>
+            </div>
+            <div class="t-roi" id="t1Pct">+0%</div>
+          </div>
+          <!-- T2 -->
+          <div class="target-card">
+            <div class="t-badge">T2 (2R)</div>
+            <div>
+              <div class="t-price" id="t2Price">₹0.00</div>
+              <div class="t-details">
+                <span>Gross: <strong id="t2Gross">₹0</strong></span>
+                <span>Net PnL: <strong id="t2Net">₹0</strong></span>
+              </div>
+            </div>
+            <div class="t-roi" id="t2Pct">+0%</div>
+          </div>
+          <!-- T3 -->
+          <div class="target-card">
+            <div class="t-badge">T3 (3R)</div>
+            <div>
+              <div class="t-price" id="t3Price">₹0.00</div>
+              <div class="t-details">
+                <span>Gross: <strong id="t3Gross">₹0</strong></span>
+                <span>Net PnL: <strong id="t3Net">₹0</strong></span>
+              </div>
+            </div>
+            <div class="t-roi" id="t3Pct">+0%</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Friction Stack -->
+      <section class="card">
+        <div class="card-title">Friction Stack</div>
+        <p class="card-sub">Estimated broker & exchange modeling.</p>
+        
+        <div class="field" style="margin-bottom: 1.5rem;">
+          <select id="brokerProfile" class="minimal">
+            <option value="20">Discount Broker (₹20/order)</option>
+            <option value="0">Zero Brokerage (₹0/order)</option>
+          </select>
+        </div>
+
+        <div class="table-list">
+          <div class="table-row"><span>Brokerage (In/Out)</span><span id="feeBrokerage">₹0.00</span></div>
+          <div class="table-row"><span>STT / CTT</span><span id="feeStt">₹0.00</span></div>
+          <div class="table-row"><span>Exchange + SEBI</span><span id="feeExchange">₹0.00</span></div>
+          <div class="table-row"><span>Stamp Duty</span><span id="feeStamp">₹0.00</span></div>
+          <div class="table-row"><span>GST (18%)</span><span id="feeGst">₹0.00</span></div>
+          <div class="table-row" style="border-top: 1px solid var(--color-border); padding-top: 1.2rem; margin-top: 0.5rem; color: #ff3b30; font-size: 1.1rem;">
+            <span>Total Friction</span><strong id="feeTotal">₹0.00</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quality Gates -->
+      <section class="card">
+        <div class="card-title">Quality Gates</div>
+        <p class="card-sub">Pre-execution system checks.</p>
+        <div class="table-list" style="font-size: 1.05rem;">
+          <div class="table-row"><span>Daily Risk Limit</span><strong id="checkRisk">Pending</strong></div>
+          <div class="table-row"><span>Margin Availability</span><strong id="checkMargin">Pending</strong></div>
+          <div class="table-row"><span>Stop Logic</span><strong id="checkStop">Pending</strong></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <nav class="mobile-nav">
+    <div class="mobile-nav-grid">
+      <button class="active" onclick="window.scrollTo({top:0, behavior:'smooth'})">Engine</button>
+      <button onclick="document.getElementById('telemetryCard').scrollIntoView({behavior: 'smooth'})">Telemetry</button>
+      <button onclick="document.getElementById('feeTotal').scrollIntoView({behavior: 'smooth'})">Charges</button>
+    </div>
+  </nav>
+
+  <script>
+    // System Data
+    const instruments = {
+      equity_intraday: { label:'Equity Intraday', lotSize:1, turnoverF:0.0000345, stt:0.00025, stamp:0.00003 },
+      nifty_options: { label:'Nifty Options', lotSize:25, turnoverF:0.00053, stt:0.001, stamp:0.00003 },
+      banknifty_options: { label:'BankNifty Options', lotSize:15, turnoverF:0.00053, stt:0.001, stamp:0.00003 },
+      finnifty_options: { label:'FinNifty Options', lotSize:25, turnoverF:0.00053, stt:0.001, stamp:0.00003 },
+      nifty_futures: { label:'Nifty Futures', lotSize:25, turnoverF:0.00002, stt:0.0001, stamp:0.00002 },
+      banknifty_futures: { label:'BankNifty Futures', lotSize:15, turnoverF:0.00002, stt:0.0001, stamp:0.00002 }
+    };
+
+    const speedPresets = [
+      { riskPct: 1.0, lev: 5, slip: 0.1 },
+      { riskPct: 0.75, lev: 8, slip: 0.1 },
+      { riskPct: 1.5, lev: 6, slip: 0.2 }
+    ];
+
+    let state = { side: 'LONG', syncing: false, holdInterval: null };
+
+    const $ = id => document.getElementById(id);
+    const num = id => parseFloat($(id).value) || 0;
+    const txt = (id, text) => $(id).textContent = text;
+    const fmt0 = n => new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Number.isFinite(n) ? n : 0);
+    const fmt2 = n => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0);
+
+    function init() {
+      const sel = $('instrument');
+      Object.entries(instruments).forEach(([k, v]) => { sel.add(new Option(`${v.label} (Lot: ${v.lotSize})`, k)); });
+      bindEvents();
+      calc();
+    }
+
+    function syncRisk(source) {
+      if(state.syncing) return;
+      state.syncing = true;
+      const c = num('capital');
+      if (source === 'pct' && c) { $('riskAmount').value = ((c * num('riskPercent')) / 100).toFixed(0); } 
+      else if (source === 'amt' && c) { $('riskPercent').value = ((num('riskAmount') / c) * 100).toFixed(2); }
+      state.syncing = false;
+      calc();
+    }
+
+    function calc() {
+      const i = instruments[$('instrument').value];
+      const c = num('capital'), rAmt = num('riskAmount'), lev = Math.max(num('leverage'), 1);
+      const en = num('entry'), sl = num('stop'), slip = num('slippage') / 100;
+      
+      const rawDiff = Math.abs(en - sl);
+      const stopPts = rawDiff + (en * slip);
+      const riskPerUnit = Math.max(stopPts, 0.01);
+      
+      const rawQty = Math.floor(rAmt / riskPerUnit);
+      const compliantQty = Math.max(Math.floor(rawQty / i.lotSize) * i.lotSize, 0);
+      const lots = compliantQty / i.lotSize;
+      
+      const turnover = compliantQty * en;
+      const marginNeed = compliantQty > 0 ? turnover / lev : 0; 
+      const grossRisk = compliantQty * riskPerUnit;
+
+      const brokRate = parseFloat($('brokerProfile').value);
+      const brok = compliantQty > 0 ? brokRate * 2 : 0;
+      const exitBase = compliantQty * (state.side === 'LONG' ? en + stopPts : Math.max(en - stopPts, 0));
+      const stt = exitBase * i.stt;
+      const exch = (turnover + exitBase) * (i.turnoverF + 0.000001);
+      const stamp = turnover * i.stamp;
+      const gst = (brok + exch) * 0.18;
+      const friction = brok + stt + exch + stamp + gst;
+      
+      // Breakeven Math
+      const beShift = compliantQty ? friction / compliantQty : 0;
+      const bePrice = state.side === 'LONG' ? en + beShift : Math.max(en - beShift, 0);
+
+      // Target Ladder Math
+      const tPrice = rr => state.side === 'LONG' ? en + (stopPts * rr) : Math.max(en - (stopPts * rr), 0);
+      const tGross = rr => grossRisk * rr;
+      const tNet = rr => tGross(rr) - friction;
+      
+      [1, 2, 3].forEach(rr => {
+        txt(`t${rr}Price`, `₹${fmt2(tPrice(rr))}`);
+        txt(`t${rr}Gross`, `₹${fmt0(tGross(rr))}`);
+        txt(`t${rr}Net`, `₹${fmt0(tNet(rr))}`);
+        txt(`t${rr}Pct`, c ? `+${fmt2((tNet(rr)/c)*100)}% ROI` : '0%');
+      });
+
+      // UI Updates
+      txt('qtyDisplay', fmt0(compliantQty));
+      txt('lotDisplay', `${fmt0(lots)} lots · ${i.lotSize} qty/lot`);
+      txt('grossRiskUsed', `₹${fmt0(grossRisk)}`);
+      txt('slPoints', `${fmt2(stopPts)} pts`);
+      txt('marginNeed', `₹${fmt0(marginNeed)}`);
+      
+      txt('breakevenPrice', `₹${fmt2(bePrice)}`);
+      txt('breakevenShift', `Drags SL ${fmt2(beShift)} pts to cover friction`);
+      
+      txt('feeBrokerage', `₹${fmt2(brok)}`);
+      txt('feeStt', `₹${fmt2(stt)}`);
+      txt('feeExchange', `₹${fmt2(exch)}`);
+      txt('feeStamp', `₹${fmt2(stamp)}`);
+      txt('feeGst', `₹${fmt2(gst)}`);
+      txt('feeTotal', `₹${fmt2(friction)}`);
+
+      // Quality Gates
+      const maxLoss = num('dailyLoss');
+      const riskOk = rAmt <= maxLoss && grossRisk <= maxLoss;
+      const margOk = marginNeed <= c; 
+      
+      // Strict directional stop logic
+      const slOk = state.side === 'LONG' ? (en > sl) : (en < sl && en > 0);
+
+      const setCheck = (id, condition) => {
+        txt(id, condition ? 'PASS' : 'FAIL');
+        $(id).style.color = condition ? 'var(--trade-color)' : '#ff3b30';
+      };
+
+      setCheck('checkRisk', riskOk);
+      setCheck('checkMargin', margOk);
+      setCheck('checkStop', slOk);
+
+      const alert = $('riskAlert');
+      const telCard = $('telemetryCard');
+      
+      if(!slOk) { 
+        alert.className='status-banner error'; 
+        alert.textContent= state.side === 'LONG' ? 'INVALID STOP: Long Stop Loss must be BELOW Entry.' : 'INVALID STOP: Short Stop Loss must be ABOVE Entry.'; 
+        telCard.classList.remove('alert-pulse'); 
+      }
+      else if(!margOk) { alert.className='status-banner error'; alert.textContent='MARGIN EXCEEDED: Reduce quantity or increase leverage.'; telCard.classList.add('alert-pulse'); }
+      else if(!riskOk) { alert.className='status-banner error'; alert.textContent='DISCIPLINE BREACH: Trade exceeds Daily Max Loss.'; telCard.classList.add('alert-pulse'); }
+      else { alert.className='status-banner ok'; alert.textContent='System Ready: Trade Compliant'; telCard.classList.remove('alert-pulse'); }
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', () => {
+        if(el.id === 'riskPercent') syncRisk('pct');
+        else if(el.id === 'riskAmount') syncRisk('amt');
+        else calc();
+      }));
+
+      // Mouse-friendly Hold-to-Scroll Steppers
+      document.querySelectorAll('.stepper-btn').forEach(btn => {
+        const operate = (e) => {
+          const input = btn.parentElement.querySelector('input');
+          let step = parseFloat(input.getAttribute('step')) || 1;
+          if (e && e.shiftKey) step *= 10;
+          let val = parseFloat(input.value) || 0;
+          val += btn.classList.contains('minus') ? -step : step;
+          input.value = Math.max(0, val).toFixed(input.getAttribute('data-decimals') || 0);
+          if(input.id === 'riskPercent') syncRisk('pct');
+          else if(input.id === 'riskAmount') syncRisk('amt');
+          else calc();
+        };
+        btn.addEventListener('mousedown', (e) => { operate(e); state.holdInterval = setInterval(()=>operate(e), 150); });
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); operate(e); state.holdInterval = setInterval(()=>operate(e), 150); }, {passive:false});
+        ['mouseup', 'mouseleave', 'touchend'].forEach(evt => btn.addEventListener(evt, () => clearInterval(state.holdInterval)));
+      });
+
+      $('capitalChips').addEventListener('click', e => {
+        if(!e.target.dataset.cap) return;
+        document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        $('capital').value = e.target.dataset.cap;
+        syncRisk('pct');
+      });
+
+      // Long/Short Global Theme Shifter
+      $('sideGroup').addEventListener('click', e => {
+        if(!e.target.dataset.side) return;
+        document.querySelectorAll('#sideGroup button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        state.side = e.target.dataset.side;
+        document.body.setAttribute('data-side', state.side); // Triggers entire CSS color shift
+        calc();
+      });
+
+      $('presetSelect').addEventListener('change', e => {
+        const p = speedPresets[e.target.value];
+        $('riskPercent').value = p.riskPct;
+        $('leverage').value = p.lev;
+        $('slippage').value = p.slip;
+        syncRisk('pct');
+      });
+
+      $('themeBtn').addEventListener('click', () => {
+        const root = document.documentElement;
+        root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+
+      $('resetBtn').addEventListener('click', () => location.reload());
+    }
+
+    init();
+  </script>
+</body>
+</html>
